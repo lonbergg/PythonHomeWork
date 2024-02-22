@@ -1,13 +1,21 @@
 import math
 
+
 class Circle:
-    def __init__(self, radius, constanta):
+    pi = math.pi
+
+    def __init__(self, radius):
         self.radius = radius
-        self.constanta = constanta
 
-    def formyla_square(self):
-        s = self.constanta(math.pi) * self.radius**2
-        return f"Площадь круга равна {s}"
+    def area(self):
+        return self.pi * self.radius ** 2
 
-krug_1 = Circle(6)
-print(krug_1)
+    def dlina_kruga(self):
+        return 2 * self.pi * self.radius
+
+
+radius_value = 6
+circle_instance = Circle(radius_value)
+
+print(f"Площадь круга:  {radius_value} будет: {circle_instance.area()} ")
+print(f"Длина с радиусом: {radius_value} будет: {circle_instance.dlina_kruga()}")
