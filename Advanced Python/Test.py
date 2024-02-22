@@ -39,21 +39,6 @@
 #     switch2 = switch1.sort()
 #     return switch2
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # def is_even(num):
 #     if num % 2 == 0:
 #         return True
