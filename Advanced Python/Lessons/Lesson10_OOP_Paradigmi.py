@@ -118,3 +118,24 @@
 #
 # c = C()
 # c.say_hello()
+
+class Animal:
+    def make_sound(self):
+        pass
+
+class Dog(Animal):
+    def make_sound(self):
+        print("Woof!")
+
+class Cat(Animal):
+    def make_sound(self):
+        print("Meow!")
+
+def animal_sound(animal):
+    animal.make_sound()
+
+dog = Dog()
+cat = Cat()
+
+animal_sound(dog)  # Виведе: Woof!
+animal_sound(cat)  # Виведе: Meow!
