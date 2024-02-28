@@ -12,7 +12,7 @@ class Menu:
                 print("1. Начать игру")
                 print("2. Узнать характеристики героев")
                 print("3. Покинуть игру")
-                start = int(input("Введите число от 1-3 чтобы выбрать действие"))
+                start = int(input("Введите число от 1-3 чтобы выбрать действие: "))
                 if start not in [1, 2, 3]:
                     raise ValueError("Некорректный ввод числа, попробуйте снова!")
                 return start
@@ -36,7 +36,7 @@ class Warrior:
                f"Уровень здоровья HP = {self.hp}\n" \
                f"Базовый Урон Damage = {self.damage}\n" \
                f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}"
+               f"Удача Luck = {self.luck}\n"
 
 
 class Archer(Warrior):
@@ -52,7 +52,7 @@ class Archer(Warrior):
                f"Уровень здоровья HP = {self.hp}\n" \
                f"Базовый Урон Damage = {self.damage}\n" \
                f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}"
+               f"Удача Luck = {self.luck}\n"
 
 
 class Wizard(Warrior):
@@ -68,7 +68,7 @@ class Wizard(Warrior):
                f"Уровень здоровья HP = {self.hp}\n" \
                f"Базовый Урон Damage = {self.damage}\n" \
                f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}"
+               f"Удача Luck = {self.luck}\n"
 
 
 class Rider(Warrior):
@@ -84,10 +84,24 @@ class Rider(Warrior):
                f"Уровень здоровья HP = {self.hp}\n" \
                f"Базовый Урон Damage = {self.damage}\n" \
                f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}"
+               f"Удача Luck = {self.luck}\n"
 
 
-warrior = Warrior
-archer = Archer
-wizard = Wizard
-rider = Rider
+game = Menu()
+option = game.game_start()
+
+if option == 1:
+
+    pass
+elif option == 2:
+    warrior = Warrior(150, 20, 30, 10)
+    archer = Archer(140, 18, 35, 20)
+    wizard = Wizard(130, 25, 40, 15)
+    rider = Rider(160, 22, 25, 12)
+
+    print(warrior.display_stats())
+    print(archer.display_stats())
+    print(wizard.display_stats())
+    print(rider.display_stats())
+else:
+    print("Вы покинули игру.")
