@@ -1,8 +1,82 @@
 import random
+from enum import Enum
 
-class Menu:
+
+class CharacterType(Enum):
+    Warrior = 1
+    Archer = 2
+    Wizard = 3
+    Rider = 4
+
+
+class Character:
+    def __init__(self, hp, damage, critical_damage, luck):
+        self.hp = hp
+        self.damage = damage
+        self.critical_damage = critical_damage
+        self.luck = luck
+
+    def display_options(self):
+        return print(f"    Характеристика героя \n"
+                     f"Уровень здоровья HP = {self.hp}\n"
+                     f"Базовый Урон Damage = {self.damage}\n"
+                     f"Критический Урон Critical Damage = {self.critical_damage}\n"
+                     f"Удача Luck = {self.luck}\n")
+
+
+class Warrior(Character):
     def __init__(self):
-        pass
+        super().__init__(150, 20, 30, 10)
+
+    def dmg(self):
+        lucky = random.randint(1, 100)
+        if lucky <= self.luck:
+            crit = self.damage + (self.damage + self.critical_damage)
+            return crit
+        else:
+            return self.damage
+
+
+class Archer(Character):
+    def __init__(self):
+        super().__init__(140, 18, 35, 20)
+
+    def dmg(self):
+        lucky = random.randint(1, 100)
+        if lucky <= self.luck:
+            crit = self.damage + (self.damage + self.critical_damage)
+            return crit
+        else:
+            return self.damage
+
+
+class Wizard(Character):
+    def __init__(self, ):
+        super().__init__(130, 25, 40, 15)
+
+    def dmg(self):
+        lucky = random.randint(1, 100)
+        if lucky <= self.luck:
+            crit = self.damage + (self.damage + self.critical_damage)
+            return crit
+        else:
+            return self.damage
+
+
+class Rider(Character):
+    def __init__(self, ):
+        super().__init__(160, 22, 25, 12)
+
+    def dmg(self):
+        lucky = random.randint(1, 100)
+        if lucky <= self.luck:
+            crit = self.damage + (self.damage + self.critical_damage)
+            return crit
+        else:
+            return self.damage
+
+
+class Game:
 
     @staticmethod
     def game_start():
@@ -11,96 +85,60 @@ class Menu:
                 print("1. Начать игру")
                 print("2. Узнать характеристики героев")
                 print("3. Покинуть игру")
-                start = int(input("Введите число от 1-3 чтобы выбрать действие: "))
-                if start not in [1, 2, 3]:
+                choose = int(input("Введите число от 1-3 чтобы выбрать действие: "))
+                if choose not in [1, 2, 3]:
                     raise ValueError("Некорректный ввод числа, попробуйте снова!")
-                return start
+                return choose
             except ValueError as e:
                 print(e)
 
+    @staticmethod
+    def select_character(characters):
+        print("| Выберите своего игрового персонажа          |")
+        print("| Введите 1 для выбора =====> Warrior(Воин)   |")
+        print("| Введите 2 для выбора =====> Archer(Лучник)  |")
+        print("| Введите 3 для выбора =====> Wizard(Маг)     |")
+        print("| Введите 4 для выбора =====> Rider(Наездник) |")
 
-class Warrior:
-    def __init__(self, hp, damage, critical_damage, luck):
-        self.hp = hp
-        self.damage = damage
-        self.critical_damage = critical_damage
-        self.luck = luck
+        choose = int(input("Введите число от 1-4 чтобы выбрать действие: "))
+        match choose:
+            case 1:
+                selected_character = characters[0]
+            case 2:
+                selected_character = characters[1]
+            case 3:
+                selected_character = characters[2]
+            case 4:
+                selected_character = characters[3]
+            case _:
+                print("Некоректный выбор! Персонаж не выбран! Попробуй снова!")
+                return None
 
-    def display_stats(self):
-        self.hp = 150
-        self.damage = 20
-        self.critical_damage = 30
-        self.luck = 10
-        return f"Характеристика Warrior(Воин)\n" \
-               f"Уровень здоровья HP = {self.hp}\n" \
-               f"Базовый Урон Damage = {self.damage}\n" \
-               f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}\n"
+        selected_character.display_options()
+        return selected_character
 
-
-class Archer(Warrior):
-    def __init__(self, hp, damage, critical_damage, luck):
-        super().__init__(hp, damage, critical_damage, luck)
-
-    def display_stats(self):
-        self.hp = 140
-        self.damage = 18
-        self.critical_damage = 35
-        self.luck = 20
-        return f"Характеристика Archer(Лучник)\n" \
-               f"Уровень здоровья HP = {self.hp}\n" \
-               f"Базовый Урон Damage = {self.damage}\n" \
-               f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}\n"
+    @staticmethod
+    def display_stats_hero(character_type):
+        selected_character = char(character_type)
+        selected_character.display_options()
+        return character_type
 
 
-class Wizard(Warrior):
-    def __init__(self, hp, damage, critical_damage, luck):
-        super().__init__(hp, damage, critical_damage, luck)
-
-    def display_stats(self):
-        self.hp = 130
-        self.damage = 25
-        self.critical_damage = 40
-        self.luck = 15
-        return f"Характеристика Wizard(Маг)\n" \
-               f"Уровень здоровья HP = {self.hp}\n" \
-               f"Базовый Урон Damage = {self.damage}\n" \
-               f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}\n"
+def char(char_type: CharacterType):
+    char_dict = {
+        CharacterType.Warrior: Warrior,
+        CharacterType.Archer: Archer,
+        CharacterType.Wizard: Wizard,
+        CharacterType.Rider: Rider
+    }
+    return char_dict[char_type]()
 
 
-class Rider(Warrior):
-    def __init__(self, hp, damage, critical_damage, luck):
-        super().__init__(hp, damage, critical_damage, luck)
+characters = [char(CharacterType.Warrior),
+              char(CharacterType.Archer),
+              char(CharacterType.Wizard),
+              char(CharacterType.Rider)]
 
-    def display_stats(self):
-        self.hp = 160
-        self.damage = 22
-        self.critical_damage = 25
-        self.luck = 12
-        return f"Характеристика Rider(Наездник)\n" \
-               f"Уровень здоровья HP = {self.hp}\n" \
-               f"Базовый Урон Damage = {self.damage}\n" \
-               f"Критический Урон Critical Damage = {self.critical_damage}\n" \
-               f"Удача Luck = {self.luck}\n"
-
-
-game = Menu()
-option = game.game_start()
-
-if option == 1:
-
-    pass
-elif option == 2:
-    warrior = Warrior(150, 20, 30, 10)
-    archer = Archer(140, 18, 35, 20)
-    wizard = Wizard(130, 25, 40, 15)
-    rider = Rider(160, 22, 25, 12)
-
-    print(warrior.display_stats())
-    print(archer.display_stats())
-    print(wizard.display_stats())
-    print(rider.display_stats())
-else:
-    print("Вы покинули игру.")
+if __name__ == "__main__":
+    game = Game()
+    game.game_start()
