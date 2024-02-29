@@ -1,99 +1,110 @@
 import random
 from enum import Enum
+import sys
 
 
 class CharacterType(Enum):
-    Warrior = 1
-    Archer = 2
-    Wizard = 3
-    Rider = 4
+    WARRIOR = 0
+    ARCHER = 1
+    WIZARD = 2
+    RIDER = 3
 
 
 class Character:
-    def __init__(self, hp, damage, critical_damage, luck):
+    def __init__(self, name, hp, damage, critical_damage, luck):
+        self.name = name
         self.hp = hp
         self.damage = damage
         self.critical_damage = critical_damage
         self.luck = luck
 
     def display_options(self):
-        return print(f"    Характеристика героя \n"
+        return print(f"Характеристика героя \n"
+                     f"Hero: {self.name}\n"
                      f"Уровень здоровья HP = {self.hp}\n"
                      f"Базовый Урон Damage = {self.damage}\n"
                      f"Критический Урон Critical Damage = {self.critical_damage}\n"
                      f"Удача Luck = {self.luck}\n")
 
-
-class Warrior(Character):
-    def __init__(self):
-        super().__init__(150, 20, 30, 10)
-
     def dmg(self):
         lucky = random.randint(1, 100)
         if lucky <= self.luck:
-            crit = self.damage + (self.damage + self.critical_damage)
+            crit = self.damage + (self.damage * self.critical_damage)
             return crit
         else:
             return self.damage
+
+
+class Warrior(Character):
+    def __init__(self):
+        super().__init__("Warrior", 150, 20, 30, 10)
+
+    def attack(self, enemy):
+        if isinstance(enemy, Wizard):
+            return self.dmg() + (self.damage * 0.15)
 
 
 class Archer(Character):
     def __init__(self):
-        super().__init__(140, 18, 35, 20)
+        super().__init__("Archer", 140, 18, 35, 20)
 
-    def dmg(self):
-        lucky = random.randint(1, 100)
-        if lucky <= self.luck:
-            crit = self.damage + (self.damage + self.critical_damage)
-            return crit
-        else:
-            return self.damage
+    def attack(self, enemy):
+        if isinstance(enemy, Rider):
+            return self.dmg() + (self.damage * 0.15)
 
 
 class Wizard(Character):
     def __init__(self, ):
-        super().__init__(130, 25, 40, 15)
+        super().__init__("Wizard", 130, 25, 40, 15)
 
-    def dmg(self):
-        lucky = random.randint(1, 100)
-        if lucky <= self.luck:
-            crit = self.damage + (self.damage + self.critical_damage)
-            return crit
-        else:
-            return self.damage
+    def attack(self, enemy):
+        if isinstance(enemy, Archer):
+            return self.dmg() + (self.damage * 0.15)
 
 
 class Rider(Character):
     def __init__(self, ):
-        super().__init__(160, 22, 25, 12)
+        super().__init__("Rider", 160, 22, 25, 12)
 
-    def dmg(self):
-        lucky = random.randint(1, 100)
-        if lucky <= self.luck:
-            crit = self.damage + (self.damage + self.critical_damage)
-            return crit
-        else:
-            return self.damage
+    def attack(self, enemy):
+        if isinstance(enemy, Warrior):
+            return self.dmg() + (self.damage * 0.15)
+
+
+def char(char_type: CharacterType):
+    char_dict = {
+        CharacterType.WARRIOR: Warrior,
+        CharacterType.ARCHER: Archer,
+        CharacterType.WIZARD: Wizard,
+        CharacterType.RIDER: Rider
+    }
+    return char_dict[char_type]()
+
+
+characters = [char(CharacterType.WARRIOR),
+              char(CharacterType.ARCHER),
+              char(CharacterType.WIZARD),
+              char(CharacterType.RIDER)]
 
 
 class Game:
 
-    @staticmethod
-    def game_start():
+    def game_start(self):
         while True:
-            try:
-                print("1. Начать игру")
-                print("2. Узнать характеристики героев")
-                print("3. Покинуть игру")
-                choose = int(input("Введите число от 1-3 чтобы выбрать действие: "))
-                if choose not in [1, 2, 3]:
-                    raise ValueError("Некорректный ввод числа, попробуйте снова!")
-                return choose
-            except ValueError as e:
-                print(e)
+            print("1. Начать игру")
+            print("2. Покинуть игру")
+            choose = int(input("Введите число от 1-2 чтобы выбрать действие: "))
+            match choose:
+                case 1:
+                    self.start_game()
+                case 2:
+                    sys.exit()
+                case _:
+                    print("Incorrect inout, please try again")
+                    self.game_start()
 
     @staticmethod
-    def select_character(characters):
+    def select_character():
         print("| Выберите своего игрового персонажа          |")
         print("| Введите 1 для выбора =====> Warrior(Воин)   |")
         print("| Введите 2 для выбора =====> Archer(Лучник)  |")
@@ -103,41 +114,39 @@ class Game:
         choose = int(input("Введите число от 1-4 чтобы выбрать действие: "))
         match choose:
             case 1:
-                selected_character = characters[0]
+                choose = characters[0]
             case 2:
-                selected_character = characters[1]
+                choose = characters[1]
             case 3:
-                selected_character = characters[2]
+                choose = characters[2]
             case 4:
-                selected_character = characters[3]
+                choose = characters[3]
             case _:
                 print("Некоректный выбор! Персонаж не выбран! Попробуй снова!")
-                return None
 
-        selected_character.display_options()
-        return selected_character
+        return choose
 
-    @staticmethod
-    def display_stats_hero(character_type):
-        selected_character = char(character_type)
-        selected_character.display_options()
-        return character_type
+    def start_game(self):
+        hero_1 = self.select_character()
+        hero_2 = characters[random.randint(0, 3)]
+        print(f"Герой {hero_1.name} VS Герой {hero_2.name} ")
+        while True:
+            print(f"1) Start Fight\n"
+                  f"2) View Info\n"
+                  f"3) Exit Game")
+            choose = int(input())
+            match choose:
+                case 1:
+                    pass  # Fight который принимает Hero_1 and Hero_2
+                case 2:
+                    print(f"Your Hero: ")
+                    hero_1.display_options()
+                    print("==================")
+                    print("Your Enemy: ")
+                    hero_2.display_options()
+                case 3:
+                    sys.exit()
 
-
-def char(char_type: CharacterType):
-    char_dict = {
-        CharacterType.Warrior: Warrior,
-        CharacterType.Archer: Archer,
-        CharacterType.Wizard: Wizard,
-        CharacterType.Rider: Rider
-    }
-    return char_dict[char_type]()
-
-
-characters = [char(CharacterType.Warrior),
-              char(CharacterType.Archer),
-              char(CharacterType.Wizard),
-              char(CharacterType.Rider)]
 
 if __name__ == "__main__":
     game = Game()
