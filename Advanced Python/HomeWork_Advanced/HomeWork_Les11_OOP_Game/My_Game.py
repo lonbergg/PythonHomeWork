@@ -12,12 +12,13 @@ class CharacterType(Enum):
 
 
 class Character:
-    def __init__(self, name, hp, damage, critical_damage, luck):
+    def __init__(self, name, hp, damage, critical_damage, luck, level):
         self.name = name
         self.hp = hp
         self.damage = damage
         self.critical_damage = critical_damage
         self.luck = luck
+        self.level = level
 
     def display_options(self):
         return print(f"Характеристика героя \n"
@@ -25,20 +26,29 @@ class Character:
                      f"Уровень здоровья HP = {self.hp}\n"
                      f"Базовый Урон Damage = {self.damage}\n"
                      f"Критический Урон Critical Damage = {self.critical_damage}\n"
-                     f"Удача Luck = {self.luck}\n")
+                     f"Удача Luck = {self.luck}\n"
+                     f"Уровень Level = {self.level}\n")
 
     def dmg(self):
         lucky = random.randint(1, 100)
         if lucky <= self.luck:
-            crit = self.damage + (self.damage + self.critical_damage)
+            crit = self.damage + (self.damage * self.critical_damage)
+            print(f'{crit} - CRITICAL!!!')
             return crit
         else:
             return self.damage
 
+    def level_up(self):
+        self.level += 1
+        self.hp += 15
+        self.damage += 5
+        self.critical_damage += 0.10
+        self.luck += 3
+
 
 class Warrior(Character):
     def __init__(self):
-        super().__init__("Warrior", 150, 20, 30, 10)
+        super().__init__("Warrior", 150, 20, 0.3, 10, 1)
 
     def attack(self, enemy):
         if isinstance(enemy, Wizard):
@@ -48,7 +58,7 @@ class Warrior(Character):
 
 class Archer(Character):
     def __init__(self):
-        super().__init__("Archer", 140, 18, 35, 20)
+        super().__init__("Archer", 140, 18, 0.35, 20, 1)
 
     def attack(self, enemy):
         if isinstance(enemy, Rider):
@@ -58,7 +68,7 @@ class Archer(Character):
 
 class Wizard(Character):
     def __init__(self, ):
-        super().__init__("Wizard", 130, 25, 40, 15)
+        super().__init__("Wizard", 130, 25, 0.40, 15, 1)
 
     def attack(self, enemy):
         if isinstance(enemy, Archer):
@@ -68,7 +78,7 @@ class Wizard(Character):
 
 class Rider(Character):
     def __init__(self, ):
-        super().__init__("Rider", 160, 22, 25, 12)
+        super().__init__("Rider", 160, 22, 0.25, 12, 1)
 
     def attack(self, enemy):
         if isinstance(enemy, Warrior):
@@ -105,7 +115,7 @@ class Game:
                 case 2:
                     sys.exit()
                 case _:
-                    print("Incorrect inout, please try again")
+                    print("Incorrect input, please try again")
                     self.game_start()
 
     @staticmethod
@@ -130,7 +140,8 @@ class Game:
                 print("Некоректный выбор! Персонаж не выбран! Попробуй снова!")
         return choose
 
-    def fight_hero(self, hero_1, hero_2):
+    @staticmethod
+    def fight_hero(hero_1, hero_2):
         print(f"Битва {hero_1.name} vs {hero_2.name} Valhalla Coming For YOU BITCH! ")
         print("Fight!!!")
         while hero_1.hp > 0 and hero_2.hp > 0:
@@ -138,6 +149,7 @@ class Game:
             damage_dealt = hero_1.dmg()
             hero_2.hp -= damage_dealt
             print(f"{hero_1.name} наносит {damage_dealt} урона.")
+            print('<--------------------------------------------->')
             time.sleep(2)
             if hero_2.hp <= 0:
                 print(f"{hero_2.name} погибает. {hero_1.name} побеждает!")
@@ -147,6 +159,7 @@ class Game:
             hero_1.hp -= damage_dealt
             print(f"{hero_2.name} наносит {damage_dealt} урона.")
             time.sleep(2)
+            print('<--------------------------------------------->')
             if hero_1.hp <= 0:
                 print(f"{hero_1.name} погибает. {hero_2.name} побеждает!")
                 break
@@ -160,6 +173,15 @@ class Game:
         else:
             print("Бой завершился вничью.")
 
+    @staticmethod
+    def level_up_characters(hero_1, hero_2):
+        if hero_1.hp > 0:
+            hero_1.level_up()
+            print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
+        elif hero_2.hp > 0:
+            hero_2.level_up()
+            print(f"{hero_2.name} повысил свой уровень до {hero_2.level}!")
+
     def start_game(self):
         hero_1 = self.select_character()
         hero_2 = characters[random.randint(0, 3)]
@@ -172,6 +194,7 @@ class Game:
             match choose:
                 case 1:
                     self.fight_hero(hero_1, hero_2)
+                    self.level_up_characters(hero_1, hero_2)
                 case 2:
                     print(f"Your Hero: ")
                     hero_1.display_options()
@@ -179,7 +202,7 @@ class Game:
                     print("Your Enemy: ")
                     hero_2.display_options()
                 case 3:
-                    sys.exit()
+                    self.game_start()
 
 
 if __name__ == "__main__":
