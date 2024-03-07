@@ -15,6 +15,7 @@ class Character:
     def __init__(self, name, hp, damage, critical_damage, luck, level):
         self.name = name
         self.hp = hp
+        self.current_hp = hp
         self.damage = damage
         self.critical_damage = critical_damage
         self.luck = luck
@@ -23,7 +24,7 @@ class Character:
     def display_options(self):
         return print(f"Характеристика героя \n"
                      f"Hero: {self.name}\n"
-                     f"Уровень здоровья HP = {self.hp}\n"
+                     f"Уровень здоровья HP = {self.current_hp}\n"
                      f"Базовый Урон Damage = {self.damage}\n"
                      f"Критический Урон Critical Damage = {self.critical_damage}\n"
                      f"Удача Luck = {self.luck}\n"
@@ -33,17 +34,24 @@ class Character:
         lucky = random.randint(1, 100)
         if lucky <= self.luck:
             crit = self.damage + (self.damage * self.critical_damage)
-            print(f'{crit} - CRITICAL!!!')
+            print(f'----- {crit} CRITICAL DAMAGE -----')
             return crit
         else:
             return self.damage
 
     def level_up(self):
         self.level += 1
-        self.hp += 15
+        self.current_hp = self.get_health() + (self.get_health() * (0.15 * (self.level - 1)))
         self.damage += 5
         self.critical_damage += 0.10
         self.luck += 3
+
+    def get_health(self):
+        return self.hp
+
+    def heal(self):
+        self.current_hp = self.get_health()
+        self.level = 1
 
 
 class Warrior(Character):
@@ -143,44 +151,47 @@ class Game:
     @staticmethod
     def fight_hero(hero_1, hero_2):
         print(f"Битва {hero_1.name} vs {hero_2.name} Valhalla Coming For YOU BITCH! ")
-        print("Fight!!!")
-        while hero_1.hp > 0 and hero_2.hp > 0:
+        print(f"Fight!\n")
+        while True:
             print(f"{hero_1.name} сражается с {hero_2.name}!")
             damage_dealt = hero_1.dmg()
-            hero_2.hp -= damage_dealt
+            hero_2.current_hp -= damage_dealt
             print(f"{hero_1.name} наносит {damage_dealt} урона.")
             print('<--------------------------------------------->')
+            game.level_up_characters(hero_1, hero_2)
             time.sleep(2)
-            if hero_2.hp <= 0:
+            if hero_2.current_hp <= 0:
                 print(f"{hero_2.name} погибает. {hero_1.name} побеждает!")
-                break
+
             print(f"{hero_2.name} сражается с {hero_1.name}!")
             damage_dealt = hero_2.dmg()
-            hero_1.hp -= damage_dealt
+            hero_1.current_hp -= damage_dealt
             print(f"{hero_2.name} наносит {damage_dealt} урона.")
+            game.level_up_characters(hero_1, hero_2)
             time.sleep(2)
             print('<--------------------------------------------->')
-            if hero_1.hp <= 0:
+            if hero_1.current_hp <= 0:
                 print(f"{hero_1.name} погибает. {hero_2.name} побеждает!")
-                break
-            print(f"Текущее здоровье {hero_1.name}: {hero_1.hp}")
-            print(f"Текущее здоровье {hero_2.name}: {hero_2.hp}")
 
-        if hero_1.hp > 0:
-            print(f"{hero_1.name} побеждает!")
-        elif hero_2.hp > 0:
-            print(f"{hero_2.name} побеждает!")
-        else:
-            print("Бой завершился вничью.")
+            print(f"\nТекущее здоровье {hero_1.name}: {hero_1.current_hp}")
+            print(f"Текущее здоровье {hero_2.name}: {hero_2.current_hp}\n")
 
     @staticmethod
     def level_up_characters(hero_1, hero_2):
-        if hero_1.hp > 0:
-            hero_1.level_up()
-            print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
-        elif hero_2.hp > 0:
+        if hero_1.current_hp <= 0:
             hero_2.level_up()
+            hero_1.heal()
+            print(f"{hero_2.name} Win! {hero_1.name} Lose!")
             print(f"{hero_2.name} повысил свой уровень до {hero_2.level}!")
+            print(f"{hero_1.name} остался на прежнем уровне!")
+            game.start_game()
+        elif hero_2.current_hp <= 0:
+            hero_1.level_up()
+            hero_2.heal()
+            print(f"{hero_1.name} Win! {hero_2.name} Lose!")
+            print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
+            print(f"{hero_2.name} остался на прежнем уровне!")
+            game.start_game()
 
     def start_game(self):
         hero_1 = self.select_character()
@@ -189,7 +200,7 @@ class Game:
         while True:
             print(f"1) Start Fight\n"
                   f"2) View Info\n"
-                  f"3) Exit Game")
+                  f"3) Выход в меню для выбора нового Героя")
             choose = int(input())
             match choose:
                 case 1:
