@@ -115,16 +115,25 @@ class Game:
     def game_start(self):
         while True:
             print("1. Начать игру")
-            print("2. Покинуть игру")
+            print("2. Информация про Героев")
+            print("3. Покинуть игру")
             choose = int(input("Введите число от 1-2 чтобы выбрать действие: "))
             match choose:
                 case 1:
                     self.start_game()
                 case 2:
+                    print("Информация про Героев:\n")
+                    for character_type in CharacterType:
+                        hero = char(character_type)
+                        print(f"Тип Героя: {hero.name}")
+                        hero.display_options()
+                        print("=====================")
+                case 3:
                     sys.exit()
                 case _:
                     print("Incorrect input, please try again")
                     self.game_start()
+
 
     @staticmethod
     def select_character():
@@ -184,14 +193,14 @@ class Game:
             print(f"{hero_2.name} Win! {hero_1.name} Lose!")
             print(f"{hero_2.name} повысил свой уровень до {hero_2.level}!")
             print(f"{hero_1.name} остался на прежнем уровне!")
-            game.start_game()
+            game.game_start()
         elif hero_2.current_hp <= 0:
             hero_1.level_up()
             hero_2.heal()
             print(f"{hero_1.name} Win! {hero_2.name} Lose!")
             print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
             print(f"{hero_2.name} остался на прежнем уровне!")
-            game.start_game()
+            game.game_start()
 
     def start_game(self):
         hero_1 = self.select_character()
