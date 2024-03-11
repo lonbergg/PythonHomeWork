@@ -1,0 +1,1 @@
+slovo = int(input("Darova : "))
