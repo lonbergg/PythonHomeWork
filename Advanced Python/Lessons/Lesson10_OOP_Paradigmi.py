@@ -123,6 +123,7 @@ class Animal:
     def make_sound(self):
         pass
 
+
 class Dog(Animal):
     def make_sound(self):
         print("Woof!")
@@ -130,6 +131,7 @@ class Dog(Animal):
 class Cat(Animal):
     def make_sound(self):
         print("Meow!")
+
 
 def animal_sound(animal):
     animal.make_sound()

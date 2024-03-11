@@ -71,6 +71,18 @@ import sys
 import time
 
 
+from enum import Enum
+import random
+import sys
+import time
+
+
+class Faction(Enum):
+    WHITE = "white"
+    RED = "red"
+    BLUE = "blue"
+
+
 class CharacterType(Enum):
     WARRIOR = 0
     ARCHER = 1
@@ -79,23 +91,25 @@ class CharacterType(Enum):
 
 
 class Character:
-    def __init__(self, name, hp, damage, critical_damage, luck, level):
+    def __init__(self, name, hp, damage, critical_damage, luck, level, faction):
         self.name = name
-        self.max_hp = hp
         self.hp = hp
+        self.current_hp = hp
         self.damage = damage
         self.critical_damage = critical_damage
         self.luck = luck
         self.level = level
+        self.faction = faction
 
     def display_options(self):
         return print(f"Характеристика героя \n"
                      f"Hero: {self.name}\n"
-                     f"Уровень здоровья HP = {self.hp}\n"
+                     f"Уровень здоровья HP = {self.current_hp}\n"
                      f"Базовый Урон Damage = {self.damage}\n"
                      f"Критический Урон Critical Damage = {self.critical_damage}\n"
                      f"Удача Luck = {self.luck}\n"
-                     f"Уровень Level = {self.level}\n")
+                     f"Уровень Level = {self.level}\n"
+                     f"Фракция Faction = {self.faction}\n")
 
     def dmg(self):
         lucky = random.randint(1, 100)
@@ -108,19 +122,22 @@ class Character:
 
     def level_up(self):
         self.level += 1
-        self.max_hp += 15
-        self.hp = self.max_hp
+        self.current_hp = self.get_health() + (self.get_health() * (0.15 * (self.level - 1)))
         self.damage += 5
         self.critical_damage += 0.10
         self.luck += 3
 
-    def reset_hp(self):
-        self.hp = self.max_hp
+    def get_health(self):
+        return self.hp
+
+    def heal(self):
+        self.current_hp = self.get_health()
+        self.level = 1
 
 
 class Warrior(Character):
-    def __init__(self):
-        super().__init__("Warrior", 150, 20, 0.3, 10, 1)
+    def __init__(self, faction):
+        super().__init__("Warrior", 150, 20, 0.3, 10, 1, faction)
 
     def attack(self, enemy):
         if isinstance(enemy, Wizard):
@@ -129,8 +146,8 @@ class Warrior(Character):
 
 
 class Archer(Character):
-    def __init__(self):
-        super().__init__("Archer", 140, 18, 0.35, 20, 1)
+    def __init__(self, faction):
+        super().__init__("Archer", 140, 18, 0.35, 20, 1, faction)
 
     def attack(self, enemy):
         if isinstance(enemy, Rider):
@@ -139,8 +156,8 @@ class Archer(Character):
 
 
 class Wizard(Character):
-    def __init__(self, ):
-        super().__init__("Wizard", 130, 25, 0.40, 15, 1)
+    def __init__(self, faction):
+        super().__init__("Wizard", 130, 25, 0.40, 15, 1, faction)
 
     def attack(self, enemy):
         if isinstance(enemy, Archer):
@@ -149,8 +166,8 @@ class Wizard(Character):
 
 
 class Rider(Character):
-    def __init__(self, ):
-        super().__init__("Rider", 160, 22, 0.25, 12, 1)
+    def __init__(self, faction):
+        super().__init__("Rider", 160, 22, 0.25, 12, 1, faction)
 
     def attack(self, enemy):
         if isinstance(enemy, Warrior):
@@ -158,20 +175,48 @@ class Rider(Character):
         return self.dmg()
 
 
-def char(char_type: CharacterType):
+def char(char_type: CharacterType, faction: Faction):
     char_dict = {
         CharacterType.WARRIOR: Warrior,
         CharacterType.ARCHER: Archer,
         CharacterType.WIZARD: Wizard,
         CharacterType.RIDER: Rider
     }
-    return char_dict[char_type]()
+    return char_dict[char_type](faction)
 
 
-characters = [char(CharacterType.WARRIOR),
-              char(CharacterType.ARCHER),
-              char(CharacterType.WIZARD),
-              char(CharacterType.RIDER)]
+characters = [char(CharacterType.WARRIOR, Faction.WHITE),
+              char(CharacterType.ARCHER, Faction.BLUE),
+              char(CharacterType.WIZARD, Faction.RED),
+              char(CharacterType.RIDER, Faction.BLUE)]
+
+
+class Army:
+    def __init__(self, faction):
+        self.units = []
+        self.faction = faction
+
+    def add_unit(self, unit):
+        if unit.faction == self.faction:
+            self.units.append(unit)
+        else:
+            print("Невозможно добавить юнит другой фракции в армию")
+
+    def calculate_length(self):
+        return len(self.units)
+
+    def calculate_average_level(self):
+        total_levels = sum(unit.level for unit in self.units)
+        return total_levels / len(self.units) if len(self.units) > 0 else 0
+
+    def calculate_most_popular_unit(self):
+        if not self.units:
+            return None
+        unit_counts = {}
+        for unit in self.units:
+            unit_counts[unit.name] = unit_counts.get(unit.name, 0) + 1
+        most_popular_unit = max(unit_counts, key=unit_counts.get)
+        return most_popular_unit
 
 
 class Game:
@@ -179,16 +224,25 @@ class Game:
     def game_start(self):
         while True:
             print("1. Начать игру")
-            print("2. Покинуть игру")
-            choose = int(input("Введите число от 1-2 чтобы выбрать действие: "))
-            match choose:
-                case 1:
-                    self.start_game()
-                case 2:
-                    sys.exit()
-                case _:
-                    print("Incorrect input, please try again")
-                    self.game_start()
+            print("2. Информация про Героев")
+            print("3. Покинуть игру")
+            choose = int(input("Введите число от 1-3 чтобы выбрать действие: "))
+            if choose == 1:
+                self.start_game()
+            elif choose == 2:
+                print("Информация про Героев:\n")
+                for character_type in CharacterType:
+                    for faction in Faction:
+                        hero = char(character_type, faction)
+                        time.sleep(1)
+                        print(f"Тип Героя: {hero.name}, Фракция: {hero.faction}")
+                        hero.display_options()
+                        print("=====================")
+            elif choose == 3:
+                sys.exit()
+            else:
+                print("Incorrect input, please try again")
+                self.game_start()
 
     @staticmethod
     def select_character():
@@ -201,13 +255,13 @@ class Game:
         choose = int(input("Введите число от 1-4 чтобы выбрать действие: "))
         match choose:
             case 1:
-                choose = characters[0]
+                choose = char(CharacterType.WARRIOR, Faction.WHITE)
             case 2:
-                choose = characters[1]
+                choose = char(CharacterType.ARCHER, Faction.BLUE)
             case 3:
-                choose = characters[2]
+                choose = char(CharacterType.WIZARD, Faction.RED)
             case 4:
-                choose = characters[3]
+                choose = char(CharacterType.RIDER, Faction.BLUE)
             case _:
                 print("Некоректный выбор! Персонаж не выбран! Попробуй снова!")
         return choose
@@ -216,71 +270,78 @@ class Game:
     def fight_hero(hero_1, hero_2):
         print(f"Битва {hero_1.name} vs {hero_2.name} Valhalla Coming For YOU BITCH! ")
         print(f"Fight!\n")
-        while hero_1.hp > 0 and hero_2.hp > 0:
+        while True:
             print(f"{hero_1.name} сражается с {hero_2.name}!")
             damage_dealt = hero_1.dmg()
-            hero_2.hp -= damage_dealt
+            hero_2.current_hp -= damage_dealt
             print(f"{hero_1.name} наносит {damage_dealt} урона.")
             print('<--------------------------------------------->')
+            game.level_up_characters(hero_1, hero_2)
             time.sleep(2)
-            if hero_2.hp <= 0:
+            if hero_2.current_hp <= 0:
                 print(f"{hero_2.name} погибает. {hero_1.name} побеждает!")
 
             print(f"{hero_2.name} сражается с {hero_1.name}!")
             damage_dealt = hero_2.dmg()
-            hero_1.hp -= damage_dealt
+            hero_1.current_hp -= damage_dealt
             print(f"{hero_2.name} наносит {damage_dealt} урона.")
+            game.level_up_characters(hero_1, hero_2)
             time.sleep(2)
             print('<--------------------------------------------->')
-            if hero_1.hp <= 0:
+            if hero_1.current_hp <= 0:
                 print(f"{hero_1.name} погибает. {hero_2.name} побеждает!")
 
-            print(f"\nТекущее здоровье {hero_1.name}: {hero_1.hp}")
-            print(f"Текущее здоровье {hero_2.name}: {hero_2.hp}\n")
-
-        if hero_1.hp > 0:
-            print(f"{hero_1.name} побеждает!")
-        elif hero_2.hp > 0:
-            print(f"{hero_2.name} побеждает!")
-        else:
-            print("Бой завершился вничью.")
+            print(f"\nТекущее здоровье {hero_1.name}: {hero_1.current_hp}")
+            print(f"Текущее здоровье {hero_2.name}: {hero_2.current_hp}\n")
 
     @staticmethod
     def level_up_characters(hero_1, hero_2):
-        if hero_1.hp > 0:
-            hero_1.level_up()
-            hero_1.reset_hp()
-            print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
-        elif hero_2.hp > 0:
+        if hero_1.current_hp <= 0:
             hero_2.level_up()
-            hero_2.reset_hp()
+            hero_1.heal()
+            print(f"{hero_2.name} Win! {hero_1.name} Lose!")
             print(f"{hero_2.name} повысил свой уровень до {hero_2.level}!")
+            print(f"{hero_1.name} остался на прежнем уровне!")
+            game.game_start()
+        elif hero_2.current_hp <= 0:
+            hero_1.level_up()
+            hero_2.heal()
+            print(f"{hero_1.name} Win! {hero_2.name} Lose!")
+            print(f"{hero_1.name} повысил свой уровень до {hero_1.level}!")
+            print(f"{hero_2.name} остался на прежнем уровне!")
+            game.game_start()
 
     def start_game(self):
+        faction = input("Выберите фракцию для своей армии (white, red, blue): ")
+        player_army = Army(faction)
+
         hero_1 = self.select_character()
-        hero_2 = characters[random.randint(0, 3)]
+        player_army.add_unit(hero_1)
+
+        hero_2 = char(random.choice(list(CharacterType)), faction)
         print(f"Герой {hero_1.name} VS Герой {hero_2.name} ")
+
         while True:
             print(f"1) Start Fight\n"
                   f"2) View Info\n"
-                  f"3) Exit Game")
+                  f"3) Выход в меню для выбора нового Героя")
             choose = int(input())
-            match choose:
-                case 1:
-                    self.fight_hero(hero_1, hero_2)
-                    self.level_up_characters(hero_1, hero_2)
-                case 2:
-                    print(f"Your Hero: ")
-                    hero_1.display_options()
-                    print("==================")
-                    print("Your Enemy: ")
-                    hero_2.display_options()
-                case 3:
-                    self.game_start()
+            if choose == 1:
+                self.fight_hero(hero_1, hero_2)
+                self.level_up_characters(hero_1, hero_2)
+            elif choose == 2:
+                print(f"Your Hero: ")
+                hero_1.display_options()
+                print("==================")
+                print("Your Enemy: ")
+                hero_2.display_options()
+            elif choose == 3:
+                self.game_start()
 
 
 if __name__ == "__main__":
     game = Game()
     game.game_start()
+
 
 
