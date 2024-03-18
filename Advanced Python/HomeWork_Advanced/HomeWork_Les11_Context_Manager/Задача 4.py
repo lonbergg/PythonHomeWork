@@ -9,7 +9,6 @@ def timeit(function):
         print("Конец работы функции! Пока бля! Надо опять ждать! Прикинь бля")
         time.sleep(1.5)
         function()
-
     return wrapper
 
 

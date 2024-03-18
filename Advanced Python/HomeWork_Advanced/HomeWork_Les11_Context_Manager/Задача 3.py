@@ -3,7 +3,6 @@ def log_func(function):
         print("Здарова бандиты функция начала работу")
         function()
         print("Покеда бандиты конец работы!")
-
     return wrapper
 
 
