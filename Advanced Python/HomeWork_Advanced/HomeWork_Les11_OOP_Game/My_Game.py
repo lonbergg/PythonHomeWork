@@ -55,12 +55,23 @@ class Character:
         self.current_hp = self.get_health()
         self.level = 1
 
+    def faction_bonus_damage(self, enemy):
+        if self.faction == "white" and enemy.faction == "red":
+            return self.damage * 0.05
+        elif self.faction == "red" and enemy.faction == "blue":
+            return self.damage * 0.05
+        elif self.faction == "blue" and enemy.faction == "white":
+            return self.damage * 0.05
+        else:
+            return 0
+
 
 class Warrior(Character):
     def __init__(self):
         super().__init__("Warrior", 150, 20, 0.3, 10, 1, "white")
 
     def attack(self, enemy):
+        bonus_damage = self.faction_bonus_damage(enemy)
         if isinstance(enemy, Wizard):
             return self.dmg() + (self.damage * 0.15)
         return self.dmg()
@@ -71,6 +82,7 @@ class Archer(Character):
         super().__init__("Archer", 140, 18, 0.35, 20, 1, "blue")
 
     def attack(self, enemy):
+        bonus_damage = self.faction_bonus_damage(enemy)
         if isinstance(enemy, Rider):
             return self.dmg() + (self.damage * 0.15)
         return self.dmg()
@@ -81,6 +93,7 @@ class Wizard(Character):
         super().__init__("Wizard", 130, 25, 0.40, 15, 1, "red")
 
     def attack(self, enemy):
+        bonus_damage = self.faction_bonus_damage(enemy)
         if isinstance(enemy, Archer):
             return self.dmg() + (self.damage * 0.15)
         return self.dmg()
@@ -91,6 +104,7 @@ class Rider(Character):
         super().__init__("Rider", 160, 22, 0.25, 12, 1, "blue")
 
     def attack(self, enemy):
+        self.faction_bonus_damage(enemy)
         if isinstance(enemy, Warrior):
             return self.dmg() + (self.damage * 0.15)
         return self.dmg()
@@ -138,17 +152,43 @@ class Game:
                     print(f"Береги себя, путник! До новых встреч! Прощай!")
                     sys.exit()
                 case _:
-                    print("Incorrect input, please try again")
-                    self.game_start()
+                    print("Некорректный ввод, пожалуйста, попробуйте снова.")
 
-    @staticmethod
-    def select_character():
-        print("| Выберите своего игрового персонажа          |")
+    def select_faction(self):
+        while True:
+            print("Выберите фракцию:")
+            print("1. Белые")
+            print("2. Красные")
+            print("3. Синие")
+            faction_choice = int(input("Введите число от 1 до 3 для выбора фракции: "))
+            if faction_choice == 1:
+                faction = "white"
+                break
+            elif faction_choice == 2:
+                faction = "red"
+                break
+            elif faction_choice == 3:
+                faction = "blue"
+                break
+            else:
+                print("Некорректный ввод, пожалуйста, попробуйте снова.")
+        print(f"Вы выбрали фракцию: {faction}")
+        return faction
+
+    def select_character(self, faction):
+        faction = self.select_faction()
+        characters = [char(CharacterType.WARRIOR),
+                      char(CharacterType.ARCHER),
+                      char(CharacterType.WIZARD),
+                      char(CharacterType.RIDER)]
+        faction_characters = [character for character in characters if character.faction == faction]
+        if not faction_characters:
+            print(f"No characters found for faction {faction}. Please try again.")
+        print(f"| Выберите своего игрового персонажа из фракции {faction} |")
         print("| Введите 1 для выбора =====> Warrior(Воин)   |")
         print("| Введите 2 для выбора =====> Archer(Лучник)  |")
         print("| Введите 3 для выбора =====> Wizard(Маг)     |")
         print("| Введите 4 для выбора =====> Rider(Наездник) |")
-
         choose = int(input("Введите число от 1-4 чтобы выбрать действие: "))
         match choose:
             case 1:
@@ -218,20 +258,26 @@ class Game:
         army = []
         print("Выберите своего игрового персонажа:")
         for i in range(army_size):
-            hero = self.select_character()
+            hero = self.select_character(characters)
             army.append(hero)
             print(f"Герой {hero.name} добавлен в армию.")
         return army
 
-    @staticmethod
-    def battle_army():
-        print("Сбор армии 1:")
-        army_1_size = int(input("Введите размер армии 1: "))
-        army_1 = game.assemble_army(army_1_size)
+    def battle_army(self):
+        print("Битва Армий начинается!\n")
+        # Выбор фракции
+        player_faction = self.select_faction()
+        # Запрос количества армии у игрока
+        player_army_size = int(input("Введите размер вашей армии: "))
+        player_army = self.assemble_army(player_faction, player_army_size)
 
-        print("\nСбор армии 2:")
-        army_2_size = int(input("Введите размер армии 2: "))
-        army_2 = game.assemble_army(army_2_size)
+        # Генерация случайной фракции для противника
+        enemy_faction = random.choice(["white", "red", "blue"])
+        # Запрос количества армии у противника
+        enemy_army_size = int(input(f"Введите размер армии противника ({enemy_faction}): "))
+        enemy_army = self.assemble_army(enemy_faction, enemy_army_size)
+
+        print("Армии подготовлены к битве!")
 
         print("Битва Армий начинается!\n")
 
@@ -258,7 +304,8 @@ class Game:
             print("ПОБЕДИЛА АРМИЯ 1!!! УРАА!! ПОЗДРАВЛЯЕМ!")
 
     def start_game(self):
-        hero_1 = self.select_character()
+        faction = input("Введите фракцию (white/red/blue): ")
+        hero_1 = self.select_character(faction)
         hero_2 = characters[random.randint(0, 3)]
         print(f"Герой {hero_1.name} VS Герой {hero_2.name} ")
         while True:
